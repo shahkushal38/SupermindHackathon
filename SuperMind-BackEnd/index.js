@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors"); // Add this line at the top
 require("dotenv").config();
 
 class LangflowClient {
@@ -118,7 +119,30 @@ class LangflowClient {
 
 // Express server setup
 const app = express();
-app.use(bodyParser.json());
+
+// Update CORS configuration
+app.use(cors({
+  origin: '*',  // Allow all origins in development
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Add preflight handler
+app.options('*', cors());
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error',
+    details: err.message
+  });
+});
 
 // Configuration
 const config = {
@@ -147,6 +171,12 @@ const defaultTweaks = {
 // POST endpoint to run the flow
 app.post("/run-flow", async (req, res) => {
   try {
+    // Add request logging
+    console.log('Received request:', {
+      timestamp: new Date().toISOString(),
+      body: req.body
+    });
+
     const {
       inputValue,
       inputType = "chat",
@@ -156,7 +186,10 @@ app.post("/run-flow", async (req, res) => {
     } = req.body;
 
     if (!inputValue) {
-      return res.status(400).json({ error: "inputValue is required" });
+      return res.status(400).json({ 
+        success: false,
+        error: "inputValue is required" 
+      });
     }
 
     const response = await langflowClient.runFlow(
@@ -171,6 +204,13 @@ app.post("/run-flow", async (req, res) => {
       (message) => console.log("Stream Closed:", message),
       (error) => console.log("Stream Error:", error)
     );
+
+    // Add response logging
+    console.log('Sending response:', {
+      timestamp: new Date().toISOString(),
+      success: true,
+      hasOutput: !!response?.outputs
+    });
 
     if (!stream && response && response.outputs) {
       const flowOutputs = response.outputs[0];
@@ -191,14 +231,33 @@ app.post("/run-flow", async (req, res) => {
     console.error("Error processing request:", error);
     return res.status(500).json({
       success: false,
-      error: error.message,
+      error: error.message || "Internal server error",
+      timestamp: new Date().toISOString()
     });
   }
 });
 
-// Health check endpoint
+// Enhanced health check endpoint
 app.get("/health", (req, res) => {
-  res.json({ status: "OK" });
+  console.log('Health check requested:', {
+    timestamp: new Date().toISOString(),
+    headers: req.headers,
+    ip: req.ip
+  });
+
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    server: {
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      nodeVersion: process.version
+    },
+    config: {
+      port: PORT,
+      hasLangflowConfig: !!(config.flowIdOrName && config.langflowId && config.applicationToken && config.baseURL)
+    }
+  });
 });
 
 // Start the server
