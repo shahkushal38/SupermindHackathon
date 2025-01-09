@@ -297,13 +297,16 @@ const Home = () => {
             आकार AI
           </h1>
           <p className="text-xl text-gray-300 max-w-xl">
-            Transform Raw Data into Intelligent, Actionable Insights with
-            AI-Powered Reporting
+            <b>
+              Discover What's Trending: Unleashing the Power of AI for Insights
+            </b>
+            <br />
+            Turn social media chaos into clarity with AI-driven analytics.
           </p>
           <div className="flex space-x-4">
             <button
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105"
-              onClick={() => navigate("/project")}
+              onClick={() => navigate("/chat")}
             >
               Get Started
             </button>
@@ -316,72 +319,28 @@ const Home = () => {
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 gap-6">
           <FeatureCard
+            icon={<FileTextIcon size={48} />}
+            title="Natural Language Reports"
+            description="Ask simple questions like, What are the top hashtags this week?  and get detailed, human-like answers in seconds."
+          />
+          <FeatureCard
             icon={<DatabaseIcon size={48} />}
             title="Multi-Source Integration"
-            description="Connect seamlessly with databases, APIs, and file formats"
+            description="Seamlessly integrate with databases like DataStax Astra DB, APIs, and structured files to collect and process engagement data across platforms."
           />
           <FeatureCard
             icon={<ChartBarIcon size={48} />}
-            title="Smart Visualizations"
-            description="Generate dynamic charts and interactive dashboards"
+            title=" AI-Powered Recommendations"
+            description="Let AI suggest strategies to leverage trending hashtags. Get actionable insights tailored to your audience and content."
           />
-          <FeatureCard
-            icon={<FileTextIcon size={48} />}
-            title="Custom Reporting"
-            description="Natural language report generation with flexible formats"
-          />
+
           <FeatureCard
             icon={<ShieldCheckIcon size={48} />}
-            title="Enterprise Security"
-            description="Advanced data protection and compliance features"
+            title="Predict Future Trends"
+            description="Go beyond analysis—predict which hashtags will trend next with machine learning insights powered by historical data."
           />
         </div>
       </div>
-
-      <PricingSection />
-
-      {/* Footer */}
-      <footer className="relative z-10 bg-black/30 backdrop-blur-md py-12">
-        <div className="container mx-auto px-6 grid md:grid-cols-3 gap-8 text-gray-300">
-          <div>
-            <h4 className="text-2xl font-bold text-white mb-4">आकर AI</h4>
-            <p>
-              Transforming data into strategic insights with cutting-edge AI
-              technology.
-            </p>
-          </div>
-          <div>
-            <h4 className="text-xl font-semibold text-white mb-4">
-              Quick Links
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-indigo-400">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-indigo-400">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-indigo-400">
-                  Documentation
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xl font-semibold text-white mb-4">Contact</h4>
-            <p>Email: support@akar-ai.com</p>
-            <p>Phone: +1 (555) 123-4567</p>
-          </div>
-        </div>
-        <div className="text-center mt-8 text-gray-500">
-          © 2024 आकर AI. All Rights Reserved.
-        </div>
-      </footer>
     </div>
   );
 };

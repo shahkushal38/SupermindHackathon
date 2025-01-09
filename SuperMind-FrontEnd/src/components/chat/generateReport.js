@@ -1,5 +1,5 @@
 import axios from "axios";
-import { jsPDF } from 'jspdf';
+import { jsPDF } from "jspdf";
 
 // If you still get errors, try this alternative import for jsPDF:
 // import jsPDF from 'jspdf';
@@ -7,13 +7,19 @@ import { jsPDF } from 'jspdf';
 /**
  * Generates a report by sending a user query to the Langflow backend API.
  */
-export const generateReport = async (newMessage, userId, projectId, selectedType, sessionId) => {
+export const generateReport = async (
+  newMessage,
+  userId,
+  projectId,
+  selectedType,
+  sessionId
+) => {
   if (!newMessage || newMessage.trim().length === 0) {
-    return { type: 'error', content: "Please enter a valid message." };
+    return { type: "error", content: "Please enter a valid message." };
   }
 
   const axiosConfig = {
-    method: 'post',
+    method: "post",
     url: "http://localhost:3000/run-flow", // Verify this is correct
     data: {
       inputValue: newMessage,
@@ -27,27 +33,29 @@ export const generateReport = async (newMessage, userId, projectId, selectedType
         "Prompt-3jA5s": {},
         "ParseData-ZLQnJ": {},
         "GroqModel-bU8Um": {},
-      }
+      },
     },
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
     timeout: 30000,
     withCredentials: false, // Changed to false since we're allowing all origins
     validateStatus: function (status) {
       return status >= 200 && status < 500; // Accept all responses to handle them manually
-    }
+    },
   };
 
   try {
-    console.log('Sending request to backend:', axiosConfig.url);
+    console.log("Sending request to backend:", axiosConfig.url);
     const response = await axios(axiosConfig);
-    
-    console.log('Received response:', response.data);
+
+    console.log("Received response:", response.data);
 
     if (!response.data || !response.data.success) {
-      throw new Error(response.data?.error || "Failed to get response from server");
+      throw new Error(
+        response.data?.error || "Failed to get response from server"
+      );
     }
 
     // Get the message from the response
@@ -61,7 +69,7 @@ export const generateReport = async (newMessage, userId, projectId, selectedType
         const parsedData = JSON.parse(jsonMatch[1]);
         if (parsedData.visualizations) {
           graphData = parsedData.visualizations;
-          message = message.replace(/```json\n[\s\S]*?\n```/, '');
+          message = message.replace(/```json\n[\s\S]*?\n```/, "");
         }
       }
     } catch (error) {
@@ -70,85 +78,168 @@ export const generateReport = async (newMessage, userId, projectId, selectedType
 
     // Based on the selectedType, format the response appropriately
     switch (selectedType) {
-      case 'PDF':
+      case "PDF":
         return generatePDF(message);
 
-      case 'HTML':
+      case "HTML":
         return generateHTML(message);
 
-      case 'MARKDOWN':
+      case "MARKDOWN":
         return {
-          type: 'markdown',
+          type: "markdown",
           content: message,
-          format: 'MARKDOWN',
-          graphData
+          format: "MARKDOWN",
+          graphData,
         };
 
       default:
         return {
-          type: 'markdown',
+          type: "markdown",
           content: message,
-          format: 'MARKDOWN',
-          graphData
+          format: "MARKDOWN",
+          graphData,
         };
     }
   } catch (error) {
     console.error("Failed to generate report:", error);
-    
+
     // Improved error messages based on error type
     let errorMessage = "Something went wrong, please try again.";
-    
-    if (error.code === 'ECONNABORTED') {
+
+    if (error.code === "ECONNABORTED") {
       errorMessage = "Request timed out. Please try again.";
-    } else if (error.code === 'ERR_NETWORK') {
-      errorMessage = "Could not connect to server. Please check if the backend server is running.";
+    } else if (error.code === "ERR_NETWORK") {
+      errorMessage =
+        "Could not connect to server. Please check if the backend server is running.";
     } else if (error.response) {
       errorMessage = error.response.data?.error || "Server error occurred.";
     } else if (error.request) {
-      errorMessage = "Could not reach the server. Please check your internet connection.";
+      errorMessage =
+        "Could not reach the server. Please check your internet connection.";
     }
 
-    return { 
-      type: 'error', 
+    return {
+      type: "error",
       content: errorMessage,
-      format: 'ERROR'
+      format: "ERROR",
     };
   }
 };
 
 const generatePDF = async (content) => {
   const doc = new jsPDF();
-  
-  // Configure PDF styling
-  doc.setFont('helvetica');
-  doc.setFontSize(12);
-  
-  // Add title
-  doc.setFontSize(18);
-  doc.text('Social Media Analysis Report', 20, 20);
-  doc.setFontSize(12);
-  
-  // Split content into lines that fit the page width
-  const lines = doc.splitTextToSize(content, 170);
-  
-  // Add content with proper spacing
-  let yPosition = 40;
-  lines.forEach(line => {
+  doc.setFont("helvetica");
+
+  // Parse sections and formatting
+  const sections = content.split("###").filter(Boolean);
+  let yPosition = 20;
+
+  // Helper function for text formatting
+  const formatText = (text, size, isBold = false) => {
+    doc.setFontSize(size);
+    if (isBold) {
+      doc.setFont("helvetica", "bold");
+    } else {
+      doc.setFont("helvetica", "normal");
+    }
+  };
+
+  // Process tables
+  const processTable = (tableContent, startY) => {
+    const rows = tableContent
+      .split("\n")
+      .filter((row) => row.includes("|"))
+      .map((row) =>
+        row
+          .split("|")
+          .filter(Boolean)
+          .map((cell) => cell.trim())
+      );
+
+    const columnWidths = Array(rows[0].length).fill(170 / rows[0].length);
+    let currentY = startY;
+
+    rows.forEach((row, rowIndex) => {
+      if (currentY > 280) {
+        doc.addPage();
+        currentY = 20;
+      }
+
+      let xPosition = 20;
+      formatText(row[0], 10, rowIndex === 0);
+
+      row.forEach((cell, cellIndex) => {
+        doc.text(cell, xPosition, currentY);
+        xPosition += columnWidths[cellIndex];
+      });
+
+      currentY += 10;
+    });
+
+    return currentY + 5;
+  };
+
+  // Main title
+  formatText("Social Media Analysis Report", 24, true);
+  doc.text("Social Media Analysis Report", 20, yPosition);
+  yPosition += 20;
+
+  // Process each section
+  sections.forEach((section) => {
+    // Check page break
     if (yPosition > 280) {
       doc.addPage();
       yPosition = 20;
     }
-    doc.text(line, 20, yPosition);
-    yPosition += 7;
+
+    const lines = section.split("\n").filter(Boolean);
+
+    lines.forEach((line) => {
+      // Handle headings
+      if (line.includes("**")) {
+        const title = line.replace(/\*\*/g, "").trim();
+        formatText(title, 14, true);
+        doc.text(title, 20, yPosition);
+        yPosition += 10;
+        return;
+      }
+
+      // Handle tables
+      if (line.includes("|")) {
+        const tableContent = lines.filter((l) => l.includes("|")).join("\n");
+        yPosition = processTable(tableContent, yPosition);
+        return;
+      }
+
+      // Handle bullet points
+      if (line.trim().startsWith("*")) {
+        formatText(line.replace("*", "•").trim(), 12);
+        const bulletText = line.replace("*", "•").trim();
+        doc.text(bulletText, 25, yPosition);
+        yPosition += 7;
+        return;
+      }
+
+      // Regular text
+      if (line.trim()) {
+        formatText(line.trim(), 12);
+        const textLines = doc.splitTextToSize(line.trim(), 170);
+        textLines.forEach((textLine) => {
+          if (yPosition > 280) {
+            doc.addPage();
+            yPosition = 20;
+          }
+          doc.text(textLine, 20, yPosition);
+          yPosition += 7;
+        });
+      }
+    });
   });
 
-  // Convert to base64
-  const pdfBase64 = doc.output('datauristring').split(',')[1];
-  
   return {
-    content: content,
-    format: 'PDF',
-    file: pdfBase64
+    content,
+    format: "PDF",
+    file: doc.output("datauristring").split(",")[1],
   };
 };
 
@@ -196,10 +287,10 @@ const generateHTML = (content) => {
 
   // Convert to base64
   const htmlBase64 = btoa(html);
-  
+
   return {
     content: content,
-    format: 'HTML',
-    file: htmlBase64
+    format: "HTML",
+    file: htmlBase64,
   };
 };

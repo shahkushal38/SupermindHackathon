@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import DOMPurify from "dompurify";
 import { generateReport } from "../chat/generateReport"; // Adjust path if needed
 import Navbar from "../basic/Navbar";
-import GraphVisualizer from '../visualization/GraphVisualizer';
+import GraphVisualizer from "../visualization/GraphVisualizer";
 
 const GRAPH_PROMPT = `
 Also, if the response contains any numerical or statistical data, please provide it in a format suitable for visualization with the following JSON structure:
@@ -58,11 +58,8 @@ Please provide a creative and visually engaging response using advanced Markdown
 
 6. 🔍 Summary:
    - End with key takeaways
-   - Add "Related Topics" section
-   - Include a "Further Reading" list if applicable
 
-Make the response engaging and easy to scan. Here's my question: 
-${GRAPH_PROMPT}
+Make the response engaging and easy to scan.
 `;
 
 // Fetch sessions for given user and project
@@ -71,10 +68,10 @@ const fetchSessions = async (userId, projectId) => {
     const response = await fetch(
       `http://localhost:3000/chats/sessions?user_id=${userId}&project_id=${projectId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
     const data = await response.json();
@@ -93,10 +90,10 @@ const fetchChatsInSession = async (sessionId) => {
     const response = await fetch(
       `http://localhost:3000/chats/session/${sessionId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
     return await response.json();
@@ -127,7 +124,7 @@ const SuggestionCategories = [
       "Show me the correlation between posting time and engagement",
       "What's the average likes and comments per post?",
       "Which type of content gets the most shares?",
-    ]
+    ],
   },
   {
     title: "Content Performance",
@@ -137,7 +134,7 @@ const SuggestionCategories = [
       "Compare video vs image post performance",
       "What's the best performing content category?",
       "Analyze post length vs engagement rate",
-    ]
+    ],
   },
   {
     title: "Temporal Analysis",
@@ -147,7 +144,7 @@ const SuggestionCategories = [
       "Show monthly engagement trends",
       "Analyze weekend vs weekday performance",
       "Peak engagement hours analysis",
-    ]
+    ],
   },
   {
     title: "Audience Insights",
@@ -157,8 +154,8 @@ const SuggestionCategories = [
       "Analyze follower growth patterns",
       "Compare audience engagement by platform",
       "Most engaging audience segments",
-    ]
-  }
+    ],
+  },
 ];
 
 const ChatInterface = () => {
@@ -197,7 +194,7 @@ const ChatInterface = () => {
   useEffect(() => {
     // Fetch chats when a session is selected
     if (selectedSession && selectedSession.session_id) {
-      fetchChatsInSession(selectedSession.session_id).then(fetchedChats => {
+      fetchChatsInSession(selectedSession.session_id).then((fetchedChats) => {
         if (fetchedChats && fetchedChats.length > 0) {
           setChats(fetchedChats);
         }
@@ -219,12 +216,12 @@ const ChatInterface = () => {
         const data = JSON.parse(jsonMatch[1]);
         if (data.visualizations) {
           setGraphData(data.visualizations);
-          return content.replace(/```json\n[\s\S]*?\n```/, ''); // Remove JSON from content
+          return content.replace(/```json\n[\s\S]*?\n```/, ""); // Remove JSON from content
         }
       }
       return content;
     } catch (error) {
-      console.error('Error processing graphs:', error);
+      console.error("Error processing graphs:", error);
       return content;
     } finally {
       setGraphsLoading(false);
@@ -235,10 +232,12 @@ const ChatInterface = () => {
     if (!newMessage.trim() || isLoading) return;
 
     setIsLoading(true);
-    
+
     try {
       // Remove any previous error messages
-      setChats(prevChats => prevChats.filter(msg => msg.format !== "ERROR"));
+      setChats((prevChats) =>
+        prevChats.filter((msg) => msg.format !== "ERROR")
+      );
 
       // Append the format prompt to user's message
       const formattedMessage = FORMAT_PROMPT + newMessage;
@@ -246,7 +245,7 @@ const ChatInterface = () => {
       const userMsg = { query: newMessage, format: null };
       const typingMsg = { query: "AI is thinking...", format: "TYPING" };
 
-      setChats(prevChats => [...prevChats, userMsg, typingMsg]);
+      setChats((prevChats) => [...prevChats, userMsg, typingMsg]);
       setNewMessage("");
 
       const response = await generateReport(
@@ -264,15 +263,18 @@ const ChatInterface = () => {
         setGraphData(null);
       }
 
-      setChats(prev => {
-        const withoutTyping = prev.filter(msg => msg.format !== "TYPING");
-        return [...withoutTyping, {
-          response: response.content,
-          format: response.format,
-          markdown_content: response.content,
-          file: response.file,
-          graphs: response.graphData
-        }];
+      setChats((prev) => {
+        const withoutTyping = prev.filter((msg) => msg.format !== "TYPING");
+        return [
+          ...withoutTyping,
+          {
+            response: response.content,
+            format: response.format,
+            markdown_content: response.content,
+            file: response.file,
+            graphs: response.graphData,
+          },
+        ];
       });
 
       // Fetch updated sessions
@@ -281,21 +283,27 @@ const ChatInterface = () => {
 
       // Update selected session only if none was selected before
       if (!selectedSession && updatedSessions.length > 0) {
-          setSelectedSession(updatedSessions[0]);
+        setSelectedSession(updatedSessions[0]);
       }
-
     } catch (error) {
       console.error("Error generating response:", error);
-      
+
       // Remove typing message and add error message
-      setChats(prev => {
-        const withoutTyping = prev.filter(msg => msg.format !== "TYPING");
-        return [...withoutTyping, {
-          query: "Error",
-          response: "Sorry, there was an error generating the response. Please try again.",
-          format: "ERROR",
-          markdown_content: `Error: ${error.message || "Network error occurred. Please check your connection."}`
-        }];
+      setChats((prev) => {
+        const withoutTyping = prev.filter((msg) => msg.format !== "TYPING");
+        return [
+          ...withoutTyping,
+          {
+            query: "Error",
+            response:
+              "Sorry, there was an error generating the response. Please try again.",
+            format: "ERROR",
+            markdown_content: `Error: ${
+              error.message ||
+              "Network error occurred. Please check your connection."
+            }`,
+          },
+        ];
       });
     } finally {
       setIsLoading(false);
@@ -344,19 +352,19 @@ const ChatInterface = () => {
   // Add this CSS class in your component
   const markdownStyles = {
     table: {
-      borderCollapse: 'collapse',
-      width: '100%',
-      margin: '1rem 0',
+      borderCollapse: "collapse",
+      width: "100%",
+      margin: "1rem 0",
     },
     th: {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      padding: '0.75rem',
-      borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
-      textAlign: 'left',
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      padding: "0.75rem",
+      borderBottom: "2px solid rgba(255, 255, 255, 0.2)",
+      textAlign: "left",
     },
     td: {
-      padding: '0.75rem',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      padding: "0.75rem",
+      borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
     },
   };
 
@@ -373,7 +381,10 @@ const ChatInterface = () => {
     return chats.map((chat, idx) => {
       if (chat.format === "TYPING") {
         return (
-          <div key={idx + "-typing"} className="flex justify-start animate-fadeIn">
+          <div
+            key={idx + "-typing"}
+            className="flex justify-start animate-fadeIn"
+          >
             <div className="max-w-xl p-4 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg transition-all duration-300">
               <div className="flex items-center space-x-2">
                 <div className="animate-pulse flex space-x-2">
@@ -389,7 +400,10 @@ const ChatInterface = () => {
       }
 
       const userMessage = (
-        <div key={idx + "-user"} className="flex justify-end animate-slideInRight">
+        <div
+          key={idx + "-user"}
+          className="flex justify-end animate-slideInRight"
+        >
           <div className="max-w-xl p-4 rounded-2xl bg-indigo-600/90 backdrop-blur-lg shadow-lg text-white transition-all duration-300 hover:bg-indigo-600">
             {chat.query}
           </div>
@@ -406,15 +420,20 @@ const ChatInterface = () => {
       // Extract and parse any JSON graph data from response
       let parsedGraphs = null;
       if (chat.markdown_content) {
-        const jsonMatches = chat.markdown_content.match(/\{[\s\S]*?"visualizations"[\s\S]*?\}/g);
+        const jsonMatches = chat.markdown_content.match(
+          /\{[\s\S]*?"visualizations"[\s\S]*?\}/g
+        );
         if (jsonMatches) {
           try {
-            parsedGraphs = jsonMatches.map(json => JSON.parse(json));
+            parsedGraphs = jsonMatches.map((json) => JSON.parse(json));
           } catch (e) {
-            console.error('Failed to parse graph data:', e);
+            console.error("Failed to parse graph data:", e);
           }
           // Remove the JSON data from markdown content
-          chat.markdown_content = chat.markdown_content.replace(/\{[\s\S]*?"visualizations"[\s\S]*?\}/g, '');
+          chat.markdown_content = chat.markdown_content.replace(
+            /\{[\s\S]*?"visualizations"[\s\S]*?\}/g,
+            ""
+          );
         }
       }
 
@@ -426,7 +445,7 @@ const ChatInterface = () => {
               <span className="text-indigo-400">PDF Report Available</span>
               <div className="space-x-2">
                 <button
-                  onClick={() => window.open(url, '_blank')}
+                  onClick={() => window.open(url, "_blank")}
                   className="px-3 py-1 bg-indigo-600/50 hover:bg-indigo-600 rounded-lg transition-colors duration-300"
                 >
                   View PDF
@@ -441,9 +460,7 @@ const ChatInterface = () => {
               </div>
             </div>
             <div className="prose prose-invert max-w-none">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-              >
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {chat.markdown_content}
               </ReactMarkdown>
             </div>
@@ -467,9 +484,7 @@ const ChatInterface = () => {
               </a>
             </div>
             <div className="prose prose-invert max-w-none">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-              >
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {chat.markdown_content}
               </ReactMarkdown>
             </div>
@@ -482,48 +497,65 @@ const ChatInterface = () => {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  table: ({node, ...props}) => (
+                  table: ({ node, ...props }) => (
                     <table style={markdownStyles.table} {...props} />
                   ),
-                  th: ({node, ...props}) => (
+                  th: ({ node, ...props }) => (
                     <th style={markdownStyles.th} {...props} />
                   ),
-                  td: ({node, ...props}) => (
+                  td: ({ node, ...props }) => (
                     <td style={markdownStyles.td} {...props} />
                   ),
-                  code: ({node, inline, ...props}) => (
-                    <code className={`${inline ? 'bg-gray-800 rounded px-1' : 'block bg-gray-800 p-4 rounded-lg'}`} {...props} />
+                  code: ({ node, inline, ...props }) => (
+                    <code
+                      className={`${
+                        inline
+                          ? "bg-gray-800 rounded px-1"
+                          : "block bg-gray-800 p-4 rounded-lg"
+                      }`}
+                      {...props}
+                    />
                   ),
-                  blockquote: ({node, ...props}) => (
-                    <blockquote className="border-l-4 border-indigo-500 pl-4 italic" {...props} />
+                  blockquote: ({ node, ...props }) => (
+                    <blockquote
+                      className="border-l-4 border-indigo-500 pl-4 italic"
+                      {...props}
+                    />
                   ),
-                  li: ({node, ...props}) => (
+                  li: ({ node, ...props }) => (
                     <li className="ml-4" {...props} />
-                  )
+                  ),
                 }}
               >
                 {chat.markdown_content}
               </ReactMarkdown>
-              {parsedGraphs && parsedGraphs.map((graphData, index) => (
-                <div key={`graph-${idx}-${index}`} className="mt-4">
-                  {graphData.visualizations.map((graph, graphIdx) => (
-                    <div key={`viz-${idx}-${index}-${graphIdx}`} className="mb-4">
-                      <h3 className="text-lg font-semibold mb-2">{graph.title}</h3>
-                      <GraphVisualizer graphData={graph} type={graph.type} />
-                    </div>
-                  ))}
-                </div>
-              ))}
+              {parsedGraphs &&
+                parsedGraphs.map((graphData, index) => (
+                  <div key={`graph-${idx}-${index}`} className="mt-4">
+                    {graphData.visualizations.map((graph, graphIdx) => (
+                      <div
+                        key={`viz-${idx}-${index}-${graphIdx}`}
+                        className="mb-4"
+                      >
+                        <h3 className="text-lg font-semibold mb-2">
+                          {graph.title}
+                        </h3>
+                        <GraphVisualizer graphData={graph} type={graph.type} />
+                      </div>
+                    ))}
+                  </div>
+                ))}
             </div>
           </div>
         );
       }
 
       const aiMessage = (
-        <div key={idx + "-ai"} className="flex justify-start animate-slideInLeft">
-          <div className="max-w-xl w-full">
-            {answerContent}
-          </div>
+        <div
+          key={idx + "-ai"}
+          className="flex justify-start animate-slideInLeft"
+        >
+          <div className="max-w-xl w-full">{answerContent}</div>
         </div>
       );
 
@@ -540,7 +572,10 @@ const ChatInterface = () => {
     <div className="h-screen overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white flex">
       {/* Sidebar */}
       <div className="w-80 bg-white/5 backdrop-blur-xl border-r border-white/10 p-6 flex flex-col shadow-2xl transition-all duration-300">
-        <a href="/project" className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors duration-300 mb-6 group">
+        <a
+          href="/project"
+          className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors duration-300 mb-6 group"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 25 25"
@@ -561,7 +596,9 @@ const ChatInterface = () => {
         </button>
 
         <div className="space-y-4 mt-2 flex-1 overflow-y-auto custom-scrollbar">
-          <h3 className="text-lg font-semibold text-gray-200 px-2">Chat History</h3>
+          <h3 className="text-lg font-semibold text-gray-200 px-2">
+            Chat History
+          </h3>
           {sessions.map((session) => (
             <div
               key={session.session_id}
@@ -578,7 +615,9 @@ const ChatInterface = () => {
             >
               <div className="flex items-center space-x-3">
                 <MessageCircleIcon size={20} className="text-indigo-400" />
-                <span className="text-sm font-medium">{session.title.slice(0,20).concat("...")}</span>
+                <span className="text-sm font-medium">
+                  {session.title.slice(0, 20).concat("...")}
+                </span>
               </div>
               <button
                 onClick={(e) => {
@@ -602,18 +641,14 @@ const ChatInterface = () => {
           ) : (
             <div className="h-full flex flex-col items-center justify-center max-w-4xl mx-auto w-full">
               <div className="text-center space-y-4 mb-12">
-                <div className="text-6xl mb-4">💡</div>
-                <h3 className="text-2xl font-semibold text-gray-300">
-                  Ready to Analyze Your Social Media Performance?
-                </h3>
                 <p className="text-gray-400">
                   Choose from our suggested queries or type your own question
                 </p>
               </div>
-              
+
               <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
                 {SuggestionCategories.map((category, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     className="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10 hover:border-indigo-500/50 transition-all duration-300"
                   >
@@ -638,10 +673,11 @@ const ChatInterface = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-8 text-center">
                 <p className="text-sm text-gray-400">
-                  Pro tip: You can combine multiple aspects in your question for deeper insights
+                  Pro tip: You can combine multiple aspects in your question for
+                  deeper insights
                 </p>
               </div>
             </div>
@@ -691,7 +727,9 @@ const ChatInterface = () => {
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSendMessage()}
+              onKeyPress={(e) =>
+                e.key === "Enter" && !isLoading && handleSendMessage()
+              }
               placeholder="Type your message..."
               className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
               disabled={isLoading}
