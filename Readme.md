@@ -151,13 +151,6 @@ Feel free to open an issue or submit a pull request if you'd like to add feature
 
 This project is licensed under the MIT License.
 
----
-
-## 📧 Contact
-
-For any questions or suggestions, please contact:  
-**Your Name** - [shahkushal38@gmail.com](mailto:shahkushal38@gmail.com)
-
 --- 
 
 Let me know if you'd like to customize further!
