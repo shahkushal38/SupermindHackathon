@@ -1,6 +1,6 @@
+const cors = require("cors");
 const express = require("express");
 const bodyParser = require("body-parser");
-const cors = require("cors"); // Add this line at the top
 require("dotenv").config();
 
 class LangflowClient {
@@ -121,26 +121,28 @@ class LangflowClient {
 const app = express();
 
 // Update CORS configuration
-app.use(cors({
-  origin: '*',  // Allow all origins in development
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "*", // Allow all origins in development
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 // Add preflight handler
-app.options('*', cors());
+app.options("*", cors());
 
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // Add error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server Error:', err);
+  console.error("Server Error:", err);
   res.status(500).json({
     success: false,
-    error: 'Internal server error',
-    details: err.message
+    error: "Internal server error",
+    details: err.message,
   });
 });
 
@@ -172,9 +174,9 @@ const defaultTweaks = {
 app.post("/run-flow", async (req, res) => {
   try {
     // Add request logging
-    console.log('Received request:', {
+    console.log("Received request:", {
       timestamp: new Date().toISOString(),
-      body: req.body
+      body: req.body,
     });
 
     const {
@@ -186,9 +188,9 @@ app.post("/run-flow", async (req, res) => {
     } = req.body;
 
     if (!inputValue) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "inputValue is required" 
+        error: "inputValue is required",
       });
     }
 
@@ -206,10 +208,10 @@ app.post("/run-flow", async (req, res) => {
     );
 
     // Add response logging
-    console.log('Sending response:', {
+    console.log("Sending response:", {
       timestamp: new Date().toISOString(),
       success: true,
-      hasOutput: !!response?.outputs
+      hasOutput: !!response?.outputs,
     });
 
     if (!stream && response && response.outputs) {
@@ -232,17 +234,17 @@ app.post("/run-flow", async (req, res) => {
     return res.status(500).json({
       success: false,
       error: error.message || "Internal server error",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
 
 // Enhanced health check endpoint
 app.get("/health", (req, res) => {
-  console.log('Health check requested:', {
+  console.log("Health check requested:", {
     timestamp: new Date().toISOString(),
     headers: req.headers,
-    ip: req.ip
+    ip: req.ip,
   });
 
   res.json({
@@ -251,12 +253,17 @@ app.get("/health", (req, res) => {
     server: {
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      nodeVersion: process.version
+      nodeVersion: process.version,
     },
     config: {
       port: PORT,
-      hasLangflowConfig: !!(config.flowIdOrName && config.langflowId && config.applicationToken && config.baseURL)
-    }
+      hasLangflowConfig: !!(
+        config.flowIdOrName &&
+        config.langflowId &&
+        config.applicationToken &&
+        config.baseURL
+      ),
+    },
   });
 });
 
