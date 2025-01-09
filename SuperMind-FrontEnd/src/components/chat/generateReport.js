@@ -20,7 +20,7 @@ export const generateReport = async (
 
   const axiosConfig = {
     method: "post",
-    url: "http://localhost:3000/run-flow", // Verify this is correct
+    url: `${process.env.REACT_APP_BACKEND_URL}/run-flow`,
     data: {
       inputValue: newMessage,
       inputType: "chat",
