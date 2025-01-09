@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { PlusIcon, FolderIcon, DownloadIcon } from "lucide-react";
-import Navbar from "../basic/Navbar";
-import axios from "axios";
 import uploadFiles from "./uploadFiles";
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +10,7 @@ export function Project() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const projectId = localStorage.getItem("projectId");
+  // const projectId = localStorage.getItem("projectId");
   const [newProject, setNewProject] = useState({ name: "", description: "" });
 
   // useEffect(() => {

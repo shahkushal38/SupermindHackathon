@@ -3,27 +3,13 @@ import { SendIcon, MessageCircleIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import DOMPurify from "dompurify";
 import { generateReport } from "../chat/generateReport"; // Adjust path if needed
-import Navbar from "../basic/Navbar";
 import GraphVisualizer from '../visualization/GraphVisualizer';
 
 const GRAPH_PROMPT = `
-Also, if the response contains any numerical or statistical data, please provide it in a format suitable for visualization with the following JSON structure:
+Also, if the response contains any numerical or statistical data, create insightful and creative charts or visualizations in SVG format, ensuring that they can be easily rendered in a ReactMarkdown component for UI display.
+Provide the visualization as SVG content directly in the response. Ensure it is clean, structured, and can be embedded in a ReactMarkdown component.
 
-{
-  "visualizations": [
-    {
-      "type": "line|bar|pie|area|radar",
-      "title": "Graph Title",
-      "data": [
-        { "name": "Category1", "value1": 10, "value2": 20 },
-        { "name": "Category2", "value1": 15, "value2": 25 }
-      ],
-      "metrics": ["value1", "value2"]
-    }
-  ]
-}
 
 Make the visualizations creative and insightful.
 `;
@@ -69,7 +55,7 @@ ${GRAPH_PROMPT}
 const fetchSessions = async (userId, projectId) => {
   try {
     const response = await fetch(
-      `http://localhost:3000/chats/sessions?user_id=${userId}&project_id=${projectId}`,
+      `http://localhost:5000/chats/sessions?user_id=${userId}&project_id=${projectId}`,
       {
         method: 'GET',
         headers: {
@@ -91,7 +77,7 @@ const fetchSessions = async (userId, projectId) => {
 const fetchChatsInSession = async (sessionId) => {
   try {
     const response = await fetch(
-      `http://localhost:3000/chats/session/${sessionId}`,
+      `http://localhost:5000/chats/session/${sessionId}`,
       {
         method: 'GET',
         headers: {
@@ -257,6 +243,7 @@ const ChatInterface = () => {
         selectedSession?.session_id
       );
 
+      console.log("Response - ", response)
       // Update graph data if present in response
       if (response.graphData) {
         setGraphData(response.graphData);
@@ -499,6 +486,9 @@ const ChatInterface = () => {
                   ),
                   li: ({node, ...props}) => (
                     <li className="ml-4" {...props} />
+                  ),
+                  svg: ({node, ...props}) => (
+                    <svg {...props} />
                   )
                 }}
               >
