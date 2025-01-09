@@ -130,21 +130,31 @@ const generatePDF = async (content) => {
   const doc = new jsPDF();
   doc.setFont("helvetica");
 
-  // Parse sections and formatting
-  const sections = content.split("###").filter(Boolean);
-  let yPosition = 20;
-
-  // Helper function for text formatting
-  const formatText = (text, size, isBold = false) => {
-    doc.setFontSize(size);
-    if (isBold) {
-      doc.setFont("helvetica", "bold");
-    } else {
-      doc.setFont("helvetica", "normal");
-    }
+  // Remove emojis and replace with text equivalents
+  const emojiMap = {
+    "📊": "[Graph]",
+    "🕒️": "[Time]",
+    "📈": "[Trend]",
+    "💡": "[Insight]",
+    "📝": "[Note]",
+    "💭": "[Thought]",
+    "🔍": "[Search]",
   };
 
-  // Process tables
+  const cleanContent = content.replace(
+    /[📊🕒️📈💡📝💭🔍]/g,
+    (match) => emojiMap[match] || match
+  );
+
+  // Rest of the PDF generation logic
+  const sections = cleanContent.split("###").filter(Boolean);
+  let yPosition = 20;
+
+  const formatText = (text, size, isBold = false) => {
+    doc.setFontSize(size);
+    doc.setFont("helvetica", isBold ? "bold" : "normal");
+  };
+
   const processTable = (tableContent, startY) => {
     const rows = tableContent
       .split("\n")
@@ -156,9 +166,12 @@ const generatePDF = async (content) => {
           .map((cell) => cell.trim())
       );
 
+    if (rows.length === 0) return startY;
+
     const columnWidths = Array(rows[0].length).fill(170 / rows[0].length);
     let currentY = startY;
 
+    // Draw table lines
     rows.forEach((row, rowIndex) => {
       if (currentY > 280) {
         doc.addPage();
@@ -168,7 +181,11 @@ const generatePDF = async (content) => {
       let xPosition = 20;
       formatText(row[0], 10, rowIndex === 0);
 
+      // Draw cells
       row.forEach((cell, cellIndex) => {
+        // Draw cell border
+        doc.rect(xPosition - 2, currentY - 5, columnWidths[cellIndex], 8);
+        // Draw cell text
         doc.text(cell, xPosition, currentY);
         xPosition += columnWidths[cellIndex];
       });
@@ -179,14 +196,12 @@ const generatePDF = async (content) => {
     return currentY + 5;
   };
 
-  // Main title
+  // Title with icon replacement
   formatText("Social Media Analysis Report", 24, true);
-  doc.text("Social Media Analysis Report", 20, yPosition);
+  doc.text("[Graph] Social Media Analysis Report", 20, yPosition);
   yPosition += 20;
 
-  // Process each section
   sections.forEach((section) => {
-    // Check page break
     if (yPosition > 280) {
       doc.addPage();
       yPosition = 20;
@@ -195,7 +210,6 @@ const generatePDF = async (content) => {
     const lines = section.split("\n").filter(Boolean);
 
     lines.forEach((line) => {
-      // Handle headings
       if (line.includes("**")) {
         const title = line.replace(/\*\*/g, "").trim();
         formatText(title, 14, true);
@@ -204,14 +218,12 @@ const generatePDF = async (content) => {
         return;
       }
 
-      // Handle tables
       if (line.includes("|")) {
         const tableContent = lines.filter((l) => l.includes("|")).join("\n");
         yPosition = processTable(tableContent, yPosition);
         return;
       }
 
-      // Handle bullet points
       if (line.trim().startsWith("*")) {
         formatText(line.replace("*", "•").trim(), 12);
         const bulletText = line.replace("*", "•").trim();
@@ -220,7 +232,6 @@ const generatePDF = async (content) => {
         return;
       }
 
-      // Regular text
       if (line.trim()) {
         formatText(line.trim(), 12);
         const textLines = doc.splitTextToSize(line.trim(), 170);
@@ -234,6 +245,8 @@ const generatePDF = async (content) => {
         });
       }
     });
+
+    yPosition += 5;
   });
 
   return {
