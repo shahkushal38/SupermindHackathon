@@ -30,8 +30,7 @@ The goal of this project is to build a streamlined system that fetches, analyzes
 - **[Langflow](https://github.com/logspace-ai/langflow)**: Workflow creation and GPT integration.
 - **[DataStax Astra DB](https://www.datastax.com/astra)**: Cloud-native NoSQL database for storing engagement data.
 - **Frontend**: Built with [React](https://reactjs.org/) to display visualizations and insights.
-- **Backend**: APIs for fetching and analyzing data using [FastAPI](https://fastapi.tiangolo.com/) or [Flask](https://flask.palletsprojects.com/).
-
+- **Backend**: APIs for fetching and analyzing data using [ExpressJS](https://expressjs.com/).
 ---
 
 ## 📋 Features
@@ -64,14 +63,13 @@ The goal of this project is to build a streamlined system that fetches, analyzes
 📦 social-media-performance-analysis
 ├── frontend/                # React-based frontend for displaying insights
 ├── backend/                 # APIs for fetching and analyzing data
-│   ├── app.py               # Main API server
+│   ├── index.js             # Main API server
 │   └── routes/              # API routes
 ├── langflow_workflows/      # Langflow workflows for data analysis
 │   └── analyze_post_type.json
 ├── datasets/                # Mock engagement datasets
 │   └── engagement_data.csv
 ├── README.md                # Project documentation
-└── requirements.txt         # Backend dependencies
 ```
 
 ---
@@ -88,7 +86,7 @@ The goal of this project is to build a streamlined system that fetches, analyzes
    - Install Langflow locally or use the hosted version.
 
 3. **Dependencies**:  
-   - Install Python (3.8+), Node.js, and npm.
+   - Install Node.js, and npm.
 
 ---
 
@@ -97,28 +95,24 @@ The goal of this project is to build a streamlined system that fetches, analyzes
 #### Backend Setup:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/social-media-performance-analysis.git
-   cd social-media-performance-analysis/backend
+   git clone https://github.com/shahkushal38/SupermindHackathon.git
+   cd SupermindHackathon/SuperMind-BackEnd
    ```
 
 2. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   npm install
    ```
 
-3. Configure Astra DB:
-   - Place your `secure-connect-database_name.zip` file in the `backend/` directory.
-   - Update the database connection code in `app.py`.
-
-4. Run the backend server:
+3. Run the backend and frontend server respectively with:
    ```bash
-   python app.py
-   ```
+   npm start
+      ```
 
 #### Frontend Setup:
 1. Navigate to the frontend directory:
    ```bash
-   cd ../frontend
+   cd SupermindHackathon/SuperMind-FrontEnd
    ```
 
 2. Install dependencies:
@@ -137,11 +131,6 @@ The goal of this project is to build a streamlined system that fetches, analyzes
    - Import `analyze_post_type.json`.
 
 ---
-
-## 🖼️ Example Visualizations
-
-### Engagement by Post Type
-![Engagement by Post Type](https://via.placeholder.com/600x300)
 
 ### Insights Example
 ```
@@ -167,7 +156,7 @@ This project is licensed under the MIT License.
 ## 📧 Contact
 
 For any questions or suggestions, please contact:  
-**Your Name** - [your.email@example.com](mailto:your.email@example.com)
+**Your Name** - [shahkushal38@gmail.com](mailto:shahkushal38@gmail.com)
 
 --- 
 
